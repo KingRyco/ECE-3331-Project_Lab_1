@@ -1,0 +1,23 @@
+`timescale 1ns / 1ps
+
+module pwm #(
+    parameter SIZE = 21,           // Width to accommodate 2M cycles (20 ms at 100 MHz)
+    parameter PERIOD = 1999999     // 20 ms period = 2,000,000 cycles - 1
+) (
+    input CLK100MHZ,               // 100 MHz clock input from Basys3
+    input [SIZE-1:0] width,        // Duty cycle input (scaled for 1-2 ms)
+    output reg pulse               // PWM output to MG995 servo (e.g., J3 PMOD)
+);
+    reg [SIZE-1:0] counter = 0;
+
+    initial begin
+        pulse = 0; // Initialize pulse to avoid undefined behavior
+    end
+
+    always @(posedge CLK100MHZ) begin
+        counter <= counter + 1;
+        if (counter >= PERIOD)
+            counter <= 0;
+        pulse <= (counter < width);
+    end
+endmodule
